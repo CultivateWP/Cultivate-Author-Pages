@@ -48,6 +48,8 @@ function cwp_author_landing_page() {
 
 	if ( function_exists( 'cultivate_category_pages' ) ) {
 		cultivate_category_pages()->show( (int) $landing_id );
+	} elseif( function_exists( 'cultivate_pro' ) ) {
+		cultivate_pro()->landing_page->show( (int) $landing_id );
 	}
 }
 add_action( 'tha_content_while_before', __NAMESPACE__ . '\cwp_author_landing_page', 20 );
