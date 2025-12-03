@@ -5,7 +5,7 @@
  * Description: Use the block editor to customize and curate your author pages. Note: this requires the Cultivate Category Pages plugin.
  * Author:      CultivateWP
  * Author URI:  https://cultivatewp.com/
- * Version:     1.0.0
+ * Version:     1.1.0
  * Text Domain: cultivate-author-pages
  *
  * Cultivate Author Pages is free software: you can redistribute it and/or modify
@@ -48,6 +48,8 @@ function cwp_author_landing_page() {
 
 	if ( function_exists( 'cultivate_category_pages' ) ) {
 		cultivate_category_pages()->show( (int) $landing_id );
+	} elseif( function_exists( 'cultivate_landing_pages' ) ) {
+		cultivate_landing_pages()->show( (int) $landing_id );
 	} elseif( function_exists( 'cultivate_pro' ) ) {
 		cultivate_pro()->landing_page->show( (int) $landing_id );
 	}
