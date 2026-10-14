@@ -2,10 +2,12 @@
 /**
  * Plugin Name: Cultivate Author Pages
  * Plugin URI:  https://cultivatewp.com/our-plugins/cultivate-author-pages/
- * Description: Use the block editor to customize and curate your author pages. Note: this requires the Cultivate Category Pages plugin.
+ * Description: Customize author archives with the block editor using Cultivate Category Pages, Cultivate Landing Pages, or Cultivate Pro.
  * Author:      CultivateWP
  * Author URI:  https://cultivatewp.com/
- * Version:     1.1.0
+ * Version:     1.2.0
+ * Requires PHP: 5.6.20
+ * Update URI:  https://github.com/CultivateWP/Cultivate-Author-Pages/
  * Text Domain: cultivate-author-pages
  *
  * Cultivate Author Pages is free software: you can redistribute it and/or modify
@@ -22,7 +24,24 @@
  * along with Cultivate Author Pages. If not, see <http://www.gnu.org/licenses/>.
  */
 
- namespace Cultivate\Author_Pages;
+namespace Cultivate\Author_Pages;
+
+use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
+
+// Exit if accessed directly.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+// Register updates for dashboard, scheduled, CLI, and external management checks.
+require_once __DIR__ . '/includes/updater/plugin-update-checker.php';
+$update_checker = PucFactory::buildUpdateChecker(
+	'https://github.com/CultivateWP/Cultivate-Author-Pages/',
+	__FILE__,
+	'cultivate-author-pages'
+);
+$update_checker->setBranch( 'master' );
+$update_checker->getVcsApi()->enableReleaseAssets( '/^cultivate-author-pages\.zip$/' );
 
 /**
  * Load ACF JSON
@@ -34,14 +53,61 @@ function load_acf_json( $paths ) {
 add_filter( 'acf/settings/load_json', __NAMESPACE__ . '\load_acf_json' );
 
 /**
- * Author Landing Page
+ * Get the landing page assigned to the queried author.
+ *
+ * @return int Landing page ID, or zero when no valid page is assigned.
  */
-function cwp_author_landing_page() {
-	if ( ! is_author() || get_query_var( 'paged' ) ) {
+function get_landing_page_id() {
+	if ( ! is_author() ) {
+		return 0;
+	}
+
+	$landing_id = (int) get_user_meta( get_queried_object_id(), 'cwp_author_landing_page', true );
+	$landing_page = $landing_id > 0 ? get_post( $landing_id ) : null;
+	if ( ! $landing_page || 'cultivate_landing' !== $landing_page->post_type || 'trash' === $landing_page->post_status ) {
+		return 0;
+	}
+
+	return $landing_id;
+}
+
+/**
+ * Add a frontend toolbar link for users who can edit the author landing page.
+ *
+ * @param \WP_Admin_Bar $wp_admin_bar Admin bar instance.
+ */
+function admin_bar_link_front( $wp_admin_bar ) {
+	if ( is_admin() ) {
 		return;
 	}
 
-	$landing_id = get_user_meta( get_queried_object_id(), 'cwp_author_landing_page', true );
+	$landing_id = get_landing_page_id();
+	if ( ! $landing_id || ! current_user_can( 'edit_post', $landing_id ) ) {
+		return;
+	}
+
+	$edit_link = get_edit_post_link( $landing_id, 'raw' );
+	if ( ! $edit_link ) {
+		return;
+	}
+
+	$wp_admin_bar->add_node( [
+		'id'    => 'cultivate_author_pages',
+		'title' => __( 'Edit Author Page', 'cultivate-author-pages' ),
+		'href'  => $edit_link,
+	] );
+}
+add_action( 'admin_bar_menu', __NAMESPACE__ . '\admin_bar_link_front', 90 );
+
+/**
+ * Author Landing Page
+ */
+function cwp_author_landing_page() {
+	if ( ! is_author() || is_paged() ) {
+		return;
+	}
+
+	$landing_id = get_landing_page_id();
 	if ( empty( $landing_id ) ) {
 		return;
 	}
@@ -63,7 +129,13 @@ add_filter(
     'cultivate_pro/landing/archive_title',
     function( $title ) {
         if ( is_author() ) {
-            $title = 'All posts by ' . get_the_author_meta( 'first_name', get_queried_object_id() );
+            $author_id = get_queried_object_id();
+            $name = get_the_author_meta( 'first_name', $author_id );
+            if ( empty( $name ) ) {
+                $name = get_the_author_meta( 'display_name', $author_id );
+            }
+            /* translators: %s: Author's first name, or display name when no first name is set. */
+            $title = sprintf( __( 'All posts by %s', 'cultivate-author-pages' ), $name );
         }
         return $title;
     },
