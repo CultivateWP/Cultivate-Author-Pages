@@ -5,7 +5,7 @@
  * Description: Customize author archives with the block editor using Cultivate Category Pages, Cultivate Landing Pages, or Cultivate Pro.
  * Author:      CultivateWP
  * Author URI:  https://cultivatewp.com/
- * Version:     1.2.0
+ * Version:     1.2.1
  * Requires PHP: 5.6.20
  * Update URI:  https://github.com/CultivateWP/Cultivate-Author-Pages/
  * Text Domain: cultivate-author-pages
