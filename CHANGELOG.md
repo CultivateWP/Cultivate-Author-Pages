@@ -2,6 +2,12 @@
 
 All notable changes to this plugin will be documented in this file.
 
+## [Unreleased]
+
+### Added
+
+- Display the CultivateWP logo beside "Edit Author Page" in the toolbar, matching "Edit Category Page".
+
 ## [1.2.0]
 
 ### Added

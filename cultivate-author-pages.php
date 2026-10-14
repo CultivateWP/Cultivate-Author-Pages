@@ -91,9 +91,13 @@ function admin_bar_link_front( $wp_admin_bar ) {
 		return;
 	}
 
+	$icon = file_get_contents( __DIR__ . '/assets/icons/cultivatewp-menu.svg' );
+	$icon = str_replace( '<svg ', '<svg width="20" height="20" aria-hidden="true" focusable="false" ', $icon );
+	$icon = '<span style="display: block; float: left; margin: 5px 5px 0 0;">' . $icon . '</span>';
+
 	$wp_admin_bar->add_node( [
 		'id'    => 'cultivate_author_pages',
-		'title' => __( 'Edit Author Page', 'cultivate-author-pages' ),
+		'title' => $icon . __( 'Edit Author Page', 'cultivate-author-pages' ),
 		'href'  => $edit_link,
 	] );
 }

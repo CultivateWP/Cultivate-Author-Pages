@@ -65,7 +65,7 @@ try {
 	$query();
 
 	$link = $node();
-	$check( $link && 'Edit Author Page' === $link->title && get_edit_post_link( $landing_id, 'raw' ) === $link->href, 'Editor receives a link to the assigned landing page.' );
+	$check( $link && 'Edit Author Page' === trim( wp_strip_all_tags( $link->title ) ) && get_edit_post_link( $landing_id, 'raw' ) === $link->href, 'Editor receives a link to the assigned landing page.' );
 
 	// Optional rendered toolbar preview for visual inspection; no authentication data is included.
 	if ( ! empty( $args[0] ) ) {
